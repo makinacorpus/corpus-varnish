@@ -16,6 +16,10 @@ makina-projects.projectname:
     varnish_conf: "salt://makina-projects/{name}/files/varnish.conf"
     safari_vary_fix: true
     domain: "{fqdn}"
+    port: 6081
+    admin_bind: localhost 
+    admin_port: 6082
+    shared_memory: "malloc,256m"
     # true is the default, remove it on multisite handlers
     force_host_header_on_backends: true
     # list of backends (load balancing)
@@ -25,7 +29,7 @@ makina-projects.projectname:
       - "localhost"
     # make some health cjhecks on backend servers?
     probe_backends: true
-    probe_url: "/monitor-status.php"
+    probe_url: "/probe.php"
     # interval between probes
     probe_interval: "20s"
     # timeout of the probe
