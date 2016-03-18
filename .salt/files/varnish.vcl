@@ -100,7 +100,9 @@ sub vcl_recv {
       }
     }
 
+    {% if data.use_drupal_recv %}
     call drupal_recv;
+    {% endif %}
 
     # Remove all cookies that Drupal doesn't need to know about. ANY remaining
     # cookie will cause the request to pass-through to Apache. For the most part
@@ -169,6 +171,7 @@ sub vcl_recv {
 }
 
 
+{% if data.use_drupal_recv %}
 sub drupal_recv {
 
   {% if data.probe_backends %}
@@ -212,6 +215,7 @@ sub drupal_recv {
     unset req.http.cookie;
   }
 }
+{% endif %}
 
 sub vcl_backend_response {
     # Happens after we have read the response headers from the backend.

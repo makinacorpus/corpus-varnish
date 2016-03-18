@@ -14,7 +14,6 @@
 makina-projects.projectname:
   data:
     varnish_conf: "salt://makina-projects/{name}/files/varnish.conf"
-    keep_cookies: "PHPSESSID"
     safari_vary_fix: true
     domain: "{fqdn}"
     # true is the default, remove it on multisite handlers
@@ -43,4 +42,9 @@ makina-projects.projectname:
     static_ttl_browser: 900
     fixperms_cron_periodicity: "*/30 * * * *"
     static_ext: "css|js|jpeg|jpg|png|gif|ico|gz|tgz|bz2|tbz|mp3|ogg|woff|eot|ttf|svg|otf|swf|html|htm|htc"
+    # this is used in a regex regsuball(req.http.Cookie, ";(<HERE>)=", "; \1=");
+    # SESS[a-z0-9]+|NO_CACHE for example means: keep cookies like PHPSESSID ou NO_CACHE
+    # all other cookies are removed by varnish (like js trackers)
+    keep_cookies: "SESS[a-z0-9]+|NO_CACHE"
+    use_drupal_recv: true
 # vim:set ft=sls:
