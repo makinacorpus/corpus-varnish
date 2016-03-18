@@ -1,0 +1,15 @@
+/var
+
+# Ignore IDE and OS-related files
+.buildpath
+.metadata
+.settings
+.project
+.idea
+.DS_Store
+*.DS_Store
+nbproject
+.hg
+atlassian-ide-plugin.xml
+*~
+\#*#
