@@ -1,18 +1,9 @@
 {% set cfg = opts.ms_project %}
 {% set data = cfg.data %}
 {% set scfg = salt['mc_utils.json_dump'](cfg) %}
-{% set php = salt['mc_php.settings']() %}
 
-include:
-  - makina-states.services.php.phpfpm_with_nginx
-
-{% import "makina-states/services/php/macros.sls" as phpm with context %}
-{{ phpm.toggle_ext('pgsql') }}
-{{ phpm.toggle_ext('pdo_pgsql') }}
 prepreqs-{{cfg.name}}:
   pkg.installed:
-    - require_in:
-      - mc_proxy: makina-php-pre-inst
     - pkgs:
       - varnish
 
