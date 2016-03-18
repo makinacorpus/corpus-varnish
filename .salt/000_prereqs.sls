@@ -7,6 +7,12 @@ prepreqs-{{cfg.name}}:
     - pkgs:
       - varnish
 
+# Suspend original systemd service
+suspend-service-varnish-{{ cfg.name }}:
+  service.dead:
+    - name: varnish
+    - enable: False
+
 {#
 This produce the default layout
 

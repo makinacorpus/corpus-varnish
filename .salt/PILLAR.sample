@@ -15,9 +15,32 @@ makina-projects.projectname:
   data:
     varnish_conf: "salt://makina-projects/{name}/files/varnish.conf"
     keep_cookies: "PHPSESSID"
-    safari_vary_fix: 1
+    safari_vary_fix: true
     domain: "{fqdn}"
-    server_aliases: []
+    # true is the default, remove it on multisite handlers
+    force_host_header_on_backends: true
+    # list of backends (load balancing)
+    backends:
+      - { id: backend_1, ip: 127.0.0.1, port: 80 }
+    ip_allowed_for_purge:
+      - "localhost"
+    # make some health cjhecks on backend servers?
+    probe_backends: true
+    probe_url: "/monitor-status.php"
+    # interval between probes
+    probe_interval: "20s"
+    # timeout of the probe
+    probe_timeout: "8s"
+    # retain this number of last probes
+    probe_window: 5
+    # this number of failure in probe_window means we are down
+    probe_thresold: 2
+    # how many time can we use a content when backends are down?
+    grace_period: "6h"
+    # enforced cache validity period for static files
+    static_ttl: "1h"
+    # static enforced BROWSER cache period, in seconds (15min = 900, 86400=24h)
+    static_ttl_browser: 900
     fixperms_cron_periodicity: "*/30 * * * *"
-
+    static_ext: "css|js|jpeg|jpg|png|gif|ico|gz|tgz|bz2|tbz|mp3|ogg|woff|eot|ttf|svg|otf|swf|html|htm|htc"
 # vim:set ft=sls:
