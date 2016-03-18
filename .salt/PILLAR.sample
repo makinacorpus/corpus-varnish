@@ -1,0 +1,22 @@
+#
+# This file contains default values which are used
+# by the salt states deploying your project.
+# you may copy them to your relevant PILLAR file
+# before editing them.
+# If you need to add variables, this is where to begin.
+# Please keep defaults in there, but real passwords
+# must be putted inside pillar
+#
+# replace project_name in your pillar by
+# the current projectname
+# you can also merge parts of this file
+# with the relevant pillar
+makina-projects.projectname:
+  data:
+    varnish_conf: "salt://makina-projects/{name}/files/varnish.conf"
+    keep_cookies: "PHPSESSID"
+    safari_vary_fix: 1
+    domain: "{fqdn}"
+    server_aliases: []
+
+# vim:set ft=sls:
