@@ -27,9 +27,11 @@ makina-projects.projectname:
       - { id: backend_1, ip: 127.0.0.1, port: 80 }
     ip_allowed_for_purge:
       - "localhost"
-    # make some health cjhecks on backend servers?
+    # make some health checks on backend servers?
     probe_backends: true
     probe_url: "/probe.php"
+    # if this is not a regular access point you may want to restrict direct access from outside
+    restrict_probe_url_access: true
     # interval between probes
     probe_interval: "20s"
     # timeout of the probe

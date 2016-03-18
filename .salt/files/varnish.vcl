@@ -89,7 +89,7 @@ sub vcl_recv {
 
     # Do not cache these paths and restrict access
     if (req.url ~ "^/phpfpm-status\.php" ||
-        {% if data.probe_backends %}
+        {% if data.probe_backends and data.restrict_probe_url_access %}
         req.url ~ "^{{ data.probe_url | replace('.', '\.')}}" ||
         {% endif %}
         req.url ~ "^/nginx-status\.php") {
@@ -191,6 +191,7 @@ sub drupal_recv {
         || (req.url ~ "^/sites/all/libraries/")
         || (req.url ~ "^/sites/([^/]*)/themes/")
         || (req.url ~ "^/misc/")
+        || (req.url ~ "^/modules/")
       )
       && req.url ~ "\.({{ data.static_ext }})$") {
          unset req.http.cookie;
