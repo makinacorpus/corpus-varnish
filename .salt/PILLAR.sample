@@ -18,5 +18,6 @@ makina-projects.projectname:
     safari_vary_fix: 1
     domain: "{fqdn}"
     server_aliases: []
+    fixperms_cron_periodicity: "*/30 * * * *"
 
 # vim:set ft=sls:
