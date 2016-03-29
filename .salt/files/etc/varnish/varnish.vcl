@@ -86,7 +86,6 @@ sub vcl_recv {
         return(synth(400, "No host header, common, HTTP/1.1"));
     }
 
-
     # Do not cache these paths and restrict access
     if (req.url ~ "^/phpfpm-status\.php" ||
         {% if data.probe_backends and data.restrict_probe_url_access %}
@@ -101,6 +100,7 @@ sub vcl_recv {
     }
 
     {% if data.use_drupal_recv %}
+    # Drupal specific tasks
     call drupal_recv;
     {% endif %}
 

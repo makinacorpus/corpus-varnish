@@ -13,13 +13,21 @@
 # with the relevant pillar
 makina-projects.projectname:
   data:
-    varnish_conf: "salt://makina-projects/{name}/files/varnish.conf"
-    safari_vary_fix: true
-    domain: "{fqdn}"
+    # SYSTEM SETTINGS ---
+    vcl_file: "/etc/varnish/{domain}.vcl"
     port: 6081
     admin_bind: localhost 
     admin_port: 6082
-    shared_memory: "malloc,256m"
+    # prefix xlike "m" and "G" are supported
+    cache_size: "256m"
+    # If the cache size will not fit into memory (like you ask 10G and you hav2 Gb or free RAM),
+    # use disk backend instead, by setting this to true. The default is using "malloc"
+    # for shared memory only.
+    fallback_to_disk: false
+
+    #VARNISH SETTINGS ---
+    safari_vary_fix: true
+    domain: "{fqdn}"
     # true is the default, remove it on multisite handlers
     force_host_header_on_backends: true
     # list of backends (load balancing)
@@ -52,5 +60,6 @@ makina-projects.projectname:
     # SESS[a-z0-9]+|NO_CACHE for example means: keep cookies like PHPSESSID ou NO_CACHE
     # all other cookies are removed by varnish (like js trackers)
     keep_cookies: "SESS[a-z0-9]+|NO_CACHE"
+    # Load Drupal specific section
     use_drupal_recv: true
 # vim:set ft=sls:

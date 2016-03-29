@@ -1,0 +1,16 @@
+# MANAGED via salt - DO NOT EDIT - check the template
+# {% set cfg = salt['mc_project.get_configuration'](cfg) %}
+# {% set data = cfg.data %}
+[Unit]
+Description=Varnish HTTP accelerator
+
+[Service]
+Type=forking
+LimitNOFILE=131072
+LimitMEMLOCK=82000
+ExecStartPre=/usr/sbin/varnishd -C -f {{ cfg.project_root }}/etc/{{ cfg.name }}.vcl
+ExecStart=/usr/bin/varnishd-wrapper.sh
+ExecReload=/usr/share/varnish/reload-vcl
+
+[Install]
+WantedBy=multi-user.target
