@@ -333,7 +333,7 @@ sub vcl_hash {
 }
 
 sub vcl_hit {
-    if (!(obj.ttl>0s)) {
+    if (obj.ttl>0s) {
         return(deliver);
     }
     {% if data.probe_backends %}
