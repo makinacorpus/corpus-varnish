@@ -232,15 +232,24 @@ sub vcl_backend_response {
         return (deliver);
     }
 
+    # HTTP/1.0 Pragma: nocache support
+    if (beresp.http.Pragma ~ "nocache") {
+        set beresp.uncacheable = true;
+        set beresp.ttl = 120s; # how long not to cache this url.
+    }
+
     if (bereq.url ~ "\.({{ data.static_ext }})") {
 
         # Don't allow static files to set cookies.
         unset beresp.http.set-cookie;
 
-        # Enforce TTL of static files
+        # Enforce varnish TTL of static files
         set beresp.ttl = {{ data.static_ttl }};
 
-        # Enforce cache control policy
+        # will make vcl_deliver reset the Age: header
+        set beresp.http.magic_age_marker = "1";
+
+        # Enforce Browser cache control policy
         unset beresp.http.Cache-Control;
         unset beresp.http.expires;
         set beresp.http.Cache-Control = "public, max-age={{ data.static_ttl_browser }}";
@@ -263,17 +272,38 @@ sub vcl_backend_response {
         set beresp.http.Cache-Control = "max-age=60";
     }
 
-    if (beresp.ttl <= 0s) {
-        set beresp.http.X-Cacheable = "NO:Not Cacheable";
-        set beresp.uncacheable = true;
-        return(deliver);
-    }
     if (beresp.http.Set-Cookie) {
-        set beresp.http.X-Cacheable = "NO:Not Cacheable setting cookie";
+        set beresp.http.X-Varnish-Cacheable = "NO:Not Cacheable setting cookie";
         set beresp.uncacheable = true;
         return(deliver);
     }
-    set beresp.http.X-Cacheable = "YES";
+
+    if (beresp.ttl <= 0s) {
+        set beresp.http.X-Varnish-Cacheable = "NO:Not Cacheable";
+        set beresp.uncacheable = true;
+        return(deliver);
+    } else {
+
+        # varnish TTL will be the one set by the application
+        # set beresp.ttl = ;
+
+        # will make vcl_deliver reset the Age: header
+        set beresp.http.magic_age_marker = "1";
+
+        # Enforce Browser cache control policy
+        # this shoudl be shorter than the real ttl managed by Varnish
+        unset beresp.http.Cache-Control;
+        unset beresp.http.expires;
+        set beresp.http.Cache-Control = "public, max-age={{ data.default_ttl_browser }}";
+
+    }
+    
+    if (beresp.uncacheable) {
+        set beresp.http.X-Varnish-Cacheable = "No, in fact.";
+    } else {
+        set beresp.http.X-Varnish-Cacheable = "YES";
+    }
+    set beresp.http.X-Varnish-TTL = beresp.ttl;
 
     return(deliver);
 }
@@ -283,13 +313,7 @@ sub vcl_deliver {
     # response to the client.
     #
     # You can do accounting or modifying the final object here.
-
-    if (obj.hits > 0) {
-        set resp.http.X-Cache = "HIT";
-        set resp.http.X-Cache-Hits = obj.hits;
-    } else {
-        set resp.http.X-Cache = "MISS";
-    }
+    set resp.http.X-Varnish-Cache-Hits = obj.hits;
 
     # Safari fix (make content uncacheable in browser cache) should apply only
     # on non-assets things, check the magicmarker for that
@@ -303,6 +327,11 @@ sub vcl_deliver {
           unset resp.http.Last-Modified;
           set resp.http.age = "0";
         }
+    }
+    # magic marker use to avoid giving real age of object to browsers
+    if (resp.http.magic_age_marker) {
+        unset resp.http.magic_age_marker;
+        set resp.http.age = "0";
     }
 }
 
@@ -334,6 +363,7 @@ sub vcl_hash {
 
 sub vcl_hit {
     if (obj.ttl>0s) {
+        // classical hit with an abject having a ttl
         return(deliver);
     }
     {% if data.probe_backends %}
@@ -346,8 +376,14 @@ sub vcl_hit {
         // we will deliver it but this will trigger a background fetch
         return(deliver);
     }
-    // fetch & deliver once we get the result
+    // Synchronously refresh the object from the backend despite the
+    // cache hit. Control will eventually pass to vcl_miss
+    // this should be return(miss) in 4.1 and return(fetch) in 4.0
+    {% if salt['mc_p_varnish.check_varnish_version_greater_than']("4.1") %}
+    return(miss);
+    {% else %}
     return(fetch);
+    {% endif %}
 }
 
 sub vcl_miss {

@@ -50,12 +50,17 @@ makina-projects.projectname:
     probe_thresold: 2
     # how many time can we use a content when backends are down?
     grace_period: "6h"
-    # enforced cache validity period for static files
+    # enforced cache validity period for static files inside Varnish
     static_ttl: "1h"
     # static enforced BROWSER cache period, in seconds (15min = 900, 86400=24h)
     static_ttl_browser: 900
+    # enforced browser cache for things which are not static, in seconds
+    # (varnish keeps the real ttl cache setting internally, this one should be lower)
+    # like 300 for 5 minutes (after that a request on varnish will
+    # almost certainly be done with a 304)
+    default_ttl_browser: 300
     fixperms_cron_periodicity: "*/30 * * * *"
-    static_ext: "css|js|jpeg|jpg|png|gif|ico|gz|tgz|bz2|tbz|mp3|ogg|woff|eot|ttf|svg|otf|swf|html|htm|htc"
+    static_ext: "css|js|jpeg|jpg|png|gif|ico|gz|tgz|bz2|tbz|mp3|ogg|woff|eot|ttf|svg|otf|swf|html|htm|htc|map"
     # this is used in a regex regsuball(req.http.Cookie, ";(<HERE>)=", "; \1=");
     # SESS[a-z0-9]+|NO_CACHE for example means: keep cookies like PHPSESSID ou NO_CACHE
     # all other cookies are removed by varnish (like js trackers)
