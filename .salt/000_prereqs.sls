@@ -75,17 +75,31 @@ This produce the default layout
 # Fix Ubuntu systemd startup which
 # does not read /etc/default/varnish
 # but still use it to pilot varishadm on reload
+varnish-systemd-override-dir:
+  file.directory:
+    - makedirs: true
+    - user: root
+    - group: root
+    - mode: 770
+    - names:
+      - /etc/systemd/system/varnish.service.d
+
 varnish-systemd-config:
   file.managed:
     - source: salt://makina-projects/{{cfg.name}}/files/etc/systemd/system/varnish.service
     - names: 
-      - /etc/systemd/system/varnish.service
+      - /etc/systemd/system/varnish.service.d/override.conf
     - template: jinja
     - mode: 640
     - user: root
     - group: root
     - defaults:
         cfg: "{{cfg.name}}"
+    - require:
+      - file: varnish-systemd-override-dir
+      - pkg: prepreqs-{{cfg.name}}
+    - watch_in:
+      - service: enable-service-varnish-{{ cfg.name }}
 
 varnish-systemd-reload-conf:
   cmd.run:

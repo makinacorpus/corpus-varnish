@@ -2,14 +2,20 @@
 # {% set cfg = salt['mc_project.get_configuration'](cfg) %}
 # {% set data = cfg.data %}
 [Unit]
-Description=Varnish HTTP accelerator
+# empty the current values first
+After=
+After=syslog.target network.target remote-fs.target nss-lookup.target
 
 [Service]
 Type=forking
 LimitNOFILE=131072
 LimitMEMLOCK=82000
+# empty the current values first
+ExecStartPre=
 ExecStartPre=/usr/sbin/varnishd -C -f {{ cfg.project_root }}/etc/{{ cfg.name }}.vcl
+ExecStart=
 ExecStart=/usr/bin/varnishd-wrapper.sh
+ExecReload=
 ExecReload=/usr/share/varnish/reload-vcl
 
 [Install]
